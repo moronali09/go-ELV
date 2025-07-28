@@ -1,48 +1,71 @@
-const os = require("os");
+
+const fs = require("fs");
+const path = require("path");
+
+const statusFile = path.join(__dirname, "..", "bot-status.json");
+
+if (!process._statusHookRegistered) {
+  process._statusHopokRegistered = true;
+
+  const saveShutdownTime = () => {
+    const data = { lastShutdown: Date.now() };
+    try {
+      fs.writeFileSync(statusFile, JSON.stringify(data));
+    } catch (e) {
+      console.error("❌ Could not save shutdown time:", e);
+    }
+    process.exit();
+  };
+
+  process.on("SIGINT", saveShutdownTime);
+  process.on("SIGTERM", saveShutdownTime);
+}
 
 module.exports = {
   config: {
-    name: "uptime",
-    aliases: ["up"],
-    version: "3.1",
-    author: "nexo_here",
-    cooldowns: 5,
+    name: "up",
+    version: "1.8",
+    author: "moron ali",
+    countDown: 0,
     role: 0,
-    shortDescription: "Show system status",
-    longDescription: "Display uptime, RAM, CPU, load, platform, etc.",
-    category: "system",
-    guide: "{pn}"
+    shortDescription: "Uptime & last offline",
+    longDescription: "Shows how long the bot is up & last time it was offline",
+    category: "info",
+    guide: { en: "Usage: /up" }
   },
 
-  onStart: async function({ message }) {
+  onStart: async function ({ message }) {
+    const now = Date.now();
+    let offlineText = "No previous shutdown info";
+
+    try {
+      if (fs.existsSync(statusFile)) {
+        const { lastShutdown } = JSON.parse(fs.readFileSync(statusFile, "utf-8"));
+        const diff = Math.floor((now - lastShutdown) / 1000);
+        const d = Math.floor(diff / 86400);
+        const h = Math.floor((diff % 86400) / 3600);
+        const m = Math.floor((diff % 3600) / 60);
+        const s = diff % 60;
+        offlineText = `Last offline: ${d}d ${h}h ${m}m ${s}s ago`;
+      }
+    } catch (_) {}
+
     const uptimeSec = Math.floor(process.uptime());
-    const days = Math.floor(uptimeSec / 86400);
-    const hours = Math.floor((uptimeSec % 86400) / 3600);
-    const minutes = Math.floor((uptimeSec % 3600) / 60);
-    const seconds = uptimeSec % 60;
-    const botUptime = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    const ud = Math.floor(uptimeSec / 86400);
+    const uh = Math.floor((uptimeSec % 86400) / 3600);
+    const um = Math.floor((uptimeSec % 3600) / 60);
+    const us = uptimeSec % 60;
 
-    const totalMem = os.totalmem();
-    const freeMem = os.freemem();
-    const usedMem = totalMem - freeMem;
-    const ramPercent = ((usedMem / totalMem) * 100).toFixed(1);
+    const replyText = [
+      "🔵 Uptime:moronali-bot",
+      "________________________",
+      `      Days: ${ud}`,
+      `      Hours: ${uh}`,
+      `      Minutes: ${um}`,
+      `      Seconds: ${us}`,
+      "________________________"
+    ].join("\n");
 
-    const cpus = os.cpus();
-    const model = cpus[0].model;
-    const cores = cpus.length;
-    const load = os.loadavg()[0].toFixed(2);
-    const cpuPercent = Math.min((load / cores) * 100, 100).toFixed(1);
-
-    const infoLines = [];
-    infoLines.push(`Uptime       : ${botUptime}`);
-    infoLines.push(`CPU          : ${model} (${cores} cores)`);
-    infoLines.push(`Load Average : ${load} / ${cpuPercent}%`);
-    infoLines.push(`RAM Usage    : ${(usedMem/1024/1024).toFixed(1)} MB / ${(totalMem/1024/1024).toFixed(1)} MB (${ramPercent}%)`);
-    infoLines.push(`Platform     : ${os.platform()} (${os.arch()})`);
-    infoLines.push(`Node Version : ${process.version}`);
-    infoLines.push(`Host Name    : ${os.hostname()}`);
-
-    const output = infoLines.join("\n");
-    return message.reply(output);
+    message.reply(replyText);
   }
 };
