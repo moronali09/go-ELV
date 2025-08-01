@@ -55,7 +55,7 @@ module.exports.run = async function({ event, api, args, Users }) {
     // Send reply
     return api.sendMessage(
       {
-        body: `📷 Profile of ${name}:`, 
+        body: ` `, 
         attachment: fs.createReadStream(pathImg)
       },
       event.threadID,
