@@ -1,20 +1,35 @@
+const https = require("https");
 
-const fs = require("fs");
-const path = require("path");
+// Environment Variables
+const BIN_ID = process.env.JSONBIN_BIN_ID;          // jsonbin.io Bin ID
+const SECRET_KEY = process.env.JSONBIN_SECRET_KEY;  // jsonbin.io Secret Key
+const API_HOST = "api.jsonbin.io";
 
-const statusFile = path.join(__dirname, "..", "bot-status.json");
-
+// Register shutdown hook once
 if (!process._statusHookRegistered) {
-  process._statusHopokRegistered = true;
-
+  process._statusHookRegistered = true;
   const saveShutdownTime = () => {
-    const data = { lastShutdown: Date.now() };
-    try {
-      fs.writeFileSync(statusFile, JSON.stringify(data));
-    } catch (e) {
-      console.error("❌ Could not save shutdown time:", e);
-    }
-    process.exit();
+    const payload = JSON.stringify({ lastShutdown: Date.now() });
+    const opts = {
+      hostname: API_HOST,
+      path: `/v3/b/${BIN_ID}`,
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Master-Key": SECRET_KEY,
+        "Content-Length": Buffer.byteLength(payload)
+      }
+    };
+    const req = https.request(opts, res => {
+      res.on("data", () => {});
+      res.on("end", () => process.exit());
+    });
+    req.on("error", err => {
+      console.error("❌ JSONBin Update Error:", err);
+      process.exit();
+    });
+    req.write(payload);
+    req.end();
   };
 
   process.on("SIGINT", saveShutdownTime);
@@ -24,48 +39,63 @@ if (!process._statusHookRegistered) {
 module.exports = {
   config: {
     name: "up",
-    version: "1.8",
+    version: "1.0",
     author: "moron ali",
-    countDown: 0,
-    role: 0,
     shortDescription: "Uptime & last offline",
-    longDescription: "Shows how long the bot is up & last time it was offline",
+    longDescription: "Shows bot uptime and last shutdown time via JSONBin",
     category: "info",
     guide: { en: "Usage: /up" }
   },
 
-  onStart: async function ({ message }) {
-    const now = Date.now();
-    let offlineText = "No previous shutdown info";
+  onStart: async function({ message }) {
+    // Fetch last shutdown time
+    const getOpts = {
+      hostname: API_HOST,
+      path: `/v3/b/${BIN_ID}/latest`,
+      method: "GET",
+      headers: { "X-Master-Key": SECRET_KEY }
+    };
 
-    try {
-      if (fs.existsSync(statusFile)) {
-        const { lastShutdown } = JSON.parse(fs.readFileSync(statusFile, "utf-8"));
-        const diff = Math.floor((now - lastShutdown) / 1000);
-        const d = Math.floor(diff / 86400);
-        const h = Math.floor((diff % 86400) / 3600);
-        const m = Math.floor((diff % 3600) / 60);
-        const s = diff % 60;
-        offlineText = `Last offline: ${d}d ${h}h ${m}m ${s}s ago`;
-      }
-    } catch (_) {}
+    https.get(getOpts, res => {
+      let raw = "";
+      res.on("data", chunk => raw += chunk);
+      res.on("end", () => {
+        let offlineText = "No previous shutdown info";
+        try {
+          const json = JSON.parse(raw);
+          const last = json.record.lastShutdown;
+          if (last) {
+            const diff = Math.floor((Date.now() - last) / 1000);
+            const d = Math.floor(diff / 86400);
+            const h = Math.floor((diff % 86400) / 3600);
+            const m = Math.floor((diff % 3600) / 60);
+            const s = diff % 60;
+            offlineText = `${d}d ${h}h ${m}m ${s}s ago`;
+          }
+        } catch (e) {
+          console.error("❌ JSONBin Parse Error:", e);
+        }
 
-    const uptimeSec = Math.floor(process.uptime());
-    const ud = Math.floor(uptimeSec / 86400);
-    const uh = Math.floor((uptimeSec % 86400) / 3600);
-    const um = Math.floor((uptimeSec % 3600) / 60);
-    const us = uptimeSec % 60;
+        // Calculate uptime
+        const up = Math.floor(process.uptime());
+        const ud = Math.floor(up / 86400);
+        const uh = Math.floor((up % 86400) / 3600);
+        const um = Math.floor((up % 3600) / 60);
+        const us = up % 60;
 
-    const replyText = [
-      "🔵 Uptime:moronali-bot",
-      "________________________",
-      `      Days: ${ud}`,
-      `      Hours: ${uh}`,
-      `      Minutes: ${um}`,
-      `      Seconds: ${us}`,
-      "________________________"
-    ].join("\n");
+        // Construct reply
+        const replyText = [
+          `🔵 Uptime: moronali-bot`,
+          `________________________`,
+          `${ud}d\n${uh}h\n${um}m`,
+          `________________________`
+        ].join("\n");
 
-    message.reply(replyText);
+        message.reply(replyText);
+      });
+    }).on("error", err => {
+      console.error("❌ JSONBin Fetch Error:", err);
+      message.reply("Error fetching status.");
+    });
   }
 };
