@@ -1,41 +1,35 @@
-const { QuickDB } = require('quick.db');
-const db = new QuickDB({ filePath: './bot-data.sqlite' });
+// commands/up.js
+module.exports.config = {
+  name: "up",
+  version: "1.0.0",
+  hasPermssion: 0,
+  credits: "nexo_here",
+  description: "Show bot uptime in detailed format",
+  commandCategory: "system",
+  cooldowns: 5,
+  usages: "{pn}"
+};
 
-// Shutdown হুক
-if (!process._statusHookRegistered) {
-  process._statusHookRegistered = true;
-  const saveShutdownTime = async () => {
-    await db.set('lastShutdown', Date.now());
-    process.exit();
-  };
-  process.on("SIGINT", saveShutdownTime);
-  process.on("SIGTERM", saveShutdownTime);
-}
+module.exports.run = async function({ api, event }) {
+  // Calculate uptime
+  const uptimeSec = Math.floor(process.uptime());
+  const days = Math.floor(uptimeSec / 86400);
+  const hours = Math.floor((uptimeSec % 86400) / 3600);
+  const minutes = Math.floor((uptimeSec % 3600) / 60);
+  const seconds = uptimeSec % 60;
 
-module.exports = {
-  // …config…
-  onStart: async function({ message }) {
-    const now = Date.now();
+  // Bot name
+  const botName = api.getCurrentUserID ? (await api.getCurrentUserID()) : "moronali-bot";
 
-    // আগের শাটডাউন
-    let offlineText = "No previous shutdown info";
-    const last = await db.get('lastShutdown');
-    if (last) {
-      const diff = Math.floor((now - last) / 1000);
-      // …দিন/ঘন্টা/মিনিট/সেকেন্ড হিসেব…
-      offlineText = `Last offline: ${d}d ${h}h ${m}m ${s}s ago`;
-    }
+  // Build message
+  let msg = `🔵 Uptime: ${botName}\n`;
+  msg += `________________________\n`;
+  msg += `      Days: ${days}\n`;
+  msg += `      Hours: ${hours}\n`;
+  msg += `      Minutes: ${minutes}\n`;
+  msg += `      Seconds: ${seconds}\n`;
+  msg += `________________________`;
 
-    // uptime
-    const uptimeSec = Math.floor(process.uptime());
-    // …উপরে যেমন করে ডিসপ্লে করেছ…
-
-    return message.reply(
-      `🔵 Uptime: moronali-bot\n` +
-      `________________________\n` +
-      `Last offline: ${offlineText}\n` +
-      // …uptime details…
-      `________________________`
-    );
-  }
+  // Send reply
+  return api.sendMessage(msg, event.threadID, event.messageID);
 };
