@@ -3,35 +3,52 @@ module.exports = {
     name: "help",
     aliases: ["menu", "commands"],
     version: "2.1",
-    author: "moronali",
-    shortDescription: "Show all available commands (paginated)",
+    author: "nexo_here",
+    shortDescription: "Show all available commands",
+    longDescription: "Display all command names page by page.",
     category: "system",
-    guide: "{pn} [page number]"
+    guide: "{pn} [page or command name]"
   },
 
-  onStart: async function({ message, args, prefix }) {
-    const allCommands = Array.from(global.GoatBot.commands.values());
-    const names = allCommands
-      .map(cmd => cmd.config.name)
-      .sort((a, b) => a.localeCompare(b));
+  onStart: async function ({ message, args, prefix }) {
+    const allCommands = global.GoatBot.commands;
+    const cmdArray = [...allCommands.keys()].sort((a, b) => a.localeCompare(b));
+    const pageSize = 10;
 
-    const pageSize = 10; // commands per page
-    const totalPages = Math.ceil(names.length / pageSize);
+    // Show detailed command info
+    const query = args[0]?.toLowerCase();
+    if (query && isNaN(query)) {
+      const cmd = allCommands.get(query) || [...allCommands.values()].find(c => c.config.aliases?.includes(query));
+      if (!cmd) return message.reply(`Command "${query}" not found.`);
+      const { name, category, aliases, version, author, guide } = cmd.config;
+      const usage = guide?.replace(/{pn}/g, prefix + name) || "None";
+      return message.reply(
+        [
+          `Command: ${name}`,
+          `Category: ${category || "other"}`,
+          aliases?.length ? `Aliases: ${aliases.join(", ")}` : null,
+          `Version: ${version}`,
+          `Author: moronali`,
+          `Usage: ${usage}`
+        ].filter(Boolean).join("\n")
+      );
+    }
 
-    // Determine requested page
-    let page = parseInt(args[0], 10);
-    if (isNaN(page) || page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-
-    // Slice commands for this page
+    // Paginated command list
+    const page = parseInt(args[0]) || 1;
     const start = (page - 1) * pageSize;
-    const paged = names.slice(start, start + pageSize);
+    const end = start + pageSize;
+    const totalPages = Math.ceil(cmdArray.length / pageSize);
+    const sliced = cmdArray.slice(start, end);
 
-    // Build reply
-    const header = `Commands (Page ${page}/${totalPages}):`;
-    const list = paged.join(", ");
-    const footer = `Type \`${prefix}help ${page + 1}\` for next page.`;
+    const msg = [
+      `📘 Help Menu (Page ${page}/${totalPages})`,
+      "________________________",
+      ...sliced.map(cmd => `• ${cmd}`),
+      "________________________",
+      `Type "${prefix}help [name]" to see details`
+    ].join("\n");
 
-    return message.reply(`${header}\n${list}\n${footer}`);
+    return message.reply(msg);
   }
 };
