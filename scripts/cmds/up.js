@@ -1,35 +1,28 @@
-// commands/up.js
 module.exports.config = {
-  name: "up",
-  version: "1.0.0",
+  name: "uptime",
+  version: "1.0.1",
   hasPermssion: 0,
-  credits: "nexo_here",
-  description: "Show bot uptime in detailed format",
+  credits: "moron ali",
+  description: "Show bot uptime",
   commandCategory: "system",
-  cooldowns: 5,
-  usages: "{pn}"
+  usages: "",
+  cooldowns: 5
 };
 
-module.exports.run = async function({ api, event }) {
-  // Calculate uptime
-  const uptimeSec = Math.floor(process.uptime());
-  const days = Math.floor(uptimeSec / 86400);
-  const hours = Math.floor((uptimeSec % 86400) / 3600);
-  const minutes = Math.floor((uptimeSec % 3600) / 60);
-  const seconds = uptimeSec % 60;
+module.exports.run = async ({ api, event }) => {
+  const time = process.uptime();
+  const days = Math.floor(time / (60 * 60 * 24));
+  const hours = Math.floor((time % (60 * 60 * 24)) / (60 * 60));
+  const minutes = Math.floor((time % (60 * 60)) / 60);
+  const seconds = Math.floor(time % 60);
 
-  // Bot name
-  const botName = api.getCurrentUserID ? (await api.getCurrentUserID()) : "moronali-bot";
+  const msg = `🔵 Uptime: moronali-bot
+________________________
+│ Days    : ${days}
+│ Hours   : ${hours}
+│ Minutes : ${minutes}
+│ Seconds : ${seconds}
+________________________`;
 
-  // Build message
-  let msg = `🔵 Uptime: ${botName}\n`;
-  msg += `________________________\n`;
-  msg += `      Days: ${days}\n`;
-  msg += `      Hours: ${hours}\n`;
-  msg += `      Minutes: ${minutes}\n`;
-  msg += `      Seconds: ${seconds}\n`;
-  msg += `________________________`;
-
-  // Send reply
-  return api.sendMessage(msg, event.threadID, event.messageID);
+  api.sendMessage(msg, event.threadID, event.messageID);
 };
