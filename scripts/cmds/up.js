@@ -1,22 +1,24 @@
-module.exports.config = {
-  name: "uptime",
-  version: "1.0.1",
-  hasPermssion: 0,
-  credits: "moron ali",
-  description: "Show bot uptime",
-  commandCategory: "system",
-  usages: "",
-  cooldowns: 5
-};
+module.exports = {
+  config: {
+    name: "up",
+    version: "1.0",
+    author: "moron ali",
+    countDown: 5,
+    role: 0,
+    shortDescription: "Show bot uptime",
+    longDescription: "Displays how long the bot has been running",
+    category: "system",
+    guide: "{p}up"
+  },
 
-module.exports.run = async ({ api, event }) => {
-  const time = process.uptime();
-  const days = Math.floor(time / (60 * 60 * 24));
-  const hours = Math.floor((time % (60 * 60 * 24)) / (60 * 60));
-  const minutes = Math.floor((time % (60 * 60)) / 60);
-  const seconds = Math.floor(time % 60);
+  onStart: async function ({ message }) {
+    const time = process.uptime(); // seconds
+    const days = Math.floor(time / (60 * 60 * 24));
+    const hours = Math.floor((time % (60 * 60 * 24)) / (60 * 60));
+    const minutes = Math.floor((time % (60 * 60)) / 60);
+    const seconds = Math.floor(time % 60);
 
-  const msg = `🔵 Uptime: moronali-bot
+    const msg = `🔵 Uptime: moronali-bot
 ________________________
 │ Days    : ${days}
 │ Hours   : ${hours}
@@ -24,5 +26,6 @@ ________________________
 │ Seconds : ${seconds}
 ________________________`;
 
-  api.sendMessage(msg, event.threadID, event.messageID);
+    message.reply(msg);
+  }
 };
