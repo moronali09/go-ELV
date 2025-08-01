@@ -1,69 +1,79 @@
-const fs = global.nodemodule['fs-extra'];
-const request = global.nodemodule['request'];
+const fs = global.nodemodule['fs'] || require('fs');
+const request = global.nodemodule['request'] || require('request');
+const axios = global.nodemodule['axios'] || require('axios');
+const path = require('path');
 
 module.exports.config = {
   name: "pp",
-  version: "1.0.1",
+  version: "1.0.5",
   hasPermssion: 0,
-  credits: "mornali",
+  credits: "moronali",
   description: "📸 Fetch Facebook profile picture",
   commandCategory: "tools",
   cooldowns: 5,
   usages: "{pn} [id|mention|profileURL]"
 };
 
-module.exports.run = async function({ event, api, args, Users }) {
+module.exports.onStart = async function({ event, api, args, Users }) {
   try {
     let uid;
 
-    // 1. Reply to a message
-    if (event.type === 'message_reply') {
+    if (event.type === 'message_reply' && event.messageReply) {
       uid = event.messageReply.senderID;
     }
-    // 2. Mention
-    else if (Object.keys(event.mentions).length) {
+
+    else if (event.mentions && Object.keys(event.mentions).length > 0) {
       uid = Object.keys(event.mentions)[0];
     }
-    // 3. Profile URL
+
     else if (args[0] && args[0].includes('facebook.com/')) {
-      uid = (await api.getUID(args[0]));
+      uid = await api.getUID(args[0]);
     }
-    // 4. Direct ID
+
     else if (args[0]) {
       uid = args[0];
     }
-    // 5. Default to sender
+
     else {
       uid = event.senderID;
     }
 
-    // Fetch name (optional)
-    const name = await Users.getNameUser(uid);
-    const picUrl = `https://graph.facebook.com/${uid}/picture?width=1500&height=1500`;
 
-    // Download image
-    const pathImg = __dirname + `/cache/${uid}.jpg`;
+    const cacheDir = path.join(__dirname, 'cache');
+    if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
+
+
+    const accessToken = '6628568379|c1e620fa708a1d5696fb991c1bde5662';
+    const picUrl = `https://graph.facebook.com/${uid}/picture?width=1500&height=1500&access_token=${accessToken}`;
+    const imagePath = path.join(cacheDir, 'pp.png');
+
+
     await new Promise((resolve, reject) => {
-      request(
-        encodeURI(picUrl)
-      )
-      .pipe(fs.createWriteStream(pathImg))
-      .on('close', resolve)
-      .on('error', reject);
+      request(encodeURI(picUrl))
+        .pipe(fs.createWriteStream(imagePath))
+        .on('close', resolve)
+        .on('error', reject);
     });
 
-    // Send reply
-    return api.sendMessage(
-      {
-        body: ` `, 
-        attachment: fs.createReadStream(pathImg)
-      },
+
+    let name;
+    try {
+      name = await Users.getNameUser(uid);
+    } catch {
+      name = uid;
+    }
+
+
+    await api.sendMessage(
+      { body: `  -==Profile==`, attachment: fs.createReadStream(imagePath) },
       event.threadID,
-      () => fs.unlinkSync(pathImg),
+      () => fs.unlinkSync(imagePath),
       event.messageID
     );
+
   } catch (err) {
-    console.error(err);
-    return api.sendMessage(`❌ Failed to fetch profile picture.`, event.threadID);
+    console.error('PP Error:', err);
+    return api.sendMessage(`❌ Lỗi: ${err.message}`, event.threadID, event.messageID);
   }
 };
+             
