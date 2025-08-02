@@ -1,70 +1,56 @@
 const axios = require("axios");
-const fs = require("fs-extra");
-const path = require("path");
+const streamifier = require("streamifier");
 
 module.exports = {
   config: {
     name: "elv",
-    version: "2.0",
+    version: "2.1",
     author: "moron ali",
-    countDown: 3,
-    role: 0,
-    description: {
-      en: "Convert Bengali text to deep voice using ElevenLabs"
-    },
-    category: "ai",
-    guide: {
-      en: "{pn} <Bangla text>"
-    }
+    description: { en: "Bengali text to voice (in-memory)" },
+    guide: { en: "{pn} <Bangla text>" },
+    category: "ai"
   },
 
   onStart: async function ({ api, event, args }) {
     const text = args.join(" ");
     if (!text) return api.sendMessage("text deo", event.threadID, event.messageID);
 
-    const apiKey = "sk_56968eeeb8eee6ec57cf862a61f9c51e11f2b7b2a87dbd9f";
+    const apiKey = "sk_56968eeeb8eee6ec57cf862a61f9c51e11f2b7b2a87dbd9f"; 
     const voiceId = "pNInz6obpgDQGcFmaJgB";
 
-    const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
-
     try {
-      const response = await axios({
-        method: "POST",
-        url,
-        responseType: "stream",
-        headers: {
-          "xi-api-key": apiKey,
-          "Content-Type": "application/json"
-        },
-        data: {
+
+      const resp = await axios.post(
+        `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+        {
           text,
           model_id: "eleven_multilingual_v2",
-          voice_settings: {
-            stability: 0.4,
-            similarity_boost: 0.8
-          }
+          voice_settings: { stability: 0.4, similarity_boost: 0.8 }
+        },
+        {
+          headers: {
+            "xi-api-key": apiKey,
+            "Content-Type": "application/json"
+          },
+          responseType: "arraybuffer"
         }
-      });
+      );
 
-      const filePath = path.join(__dirname, "bangla_voice.mp3");
-      const writer = fs.createWriteStream(filePath);
+      const audioBuffer = Buffer.from(resp.data);
 
-      response.data.pipe(writer);
+      const readStream = streamifier.createReadStream(audioBuffer);
 
-      writer.on("finish", () => {
-        api.sendMessage({
+      api.sendMessage(
+        {
           body: `✅ Voice ready for:\n"${text}"`,
-          attachment: fs.createReadStream(filePath)
-        }, event.threadID, () => fs.unlinkSync(filePath), event.messageID);
-      });
+          attachment: readStream
+        },
+        event.threadID,
+        event.messageID
+      );
 
-      writer.on("error", err => {
-        console.error("Write error:", err);
-        api.sendMessage("❌ save error", event.threadID, event.messageID);
-      });
-
-    } catch (error) {
-      console.error("API Error:", error.response?.data || error.message);
+    } catch (e) {
+      console.error("TTS Error:", e.response?.status, e.response?.data || e.message);
       api.sendMessage("❌ voice error", event.threadID, event.messageID);
     }
   }
