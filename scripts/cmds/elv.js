@@ -22,7 +22,7 @@ module.exports = {
     const text = args.join(" ");
     if (!text) return api.sendMessage("text deo", event.threadID, event.messageID);
 
-    const apiKey = "sk_80bb7a740b12aea445a7ad677921a81e5c4d3939722ef388";
+    const apiKey = "sk_56968eeeb8eee6ec57cf862a61f9c51e11f2b7b2a87dbd9f";
     const voiceId = "pNInz6obpgDQGcFmaJgB";
 
     const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
