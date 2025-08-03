@@ -8,35 +8,38 @@ const mahmud = async () => {
 module.exports = {
     config: {
         name: "song",
-        version: "1.8",
+        version: "1.9",
         author: "MahMUD", 
         countDown: 10,
         role: 0,
         category: "music",
-        guide: "{p}sing [song name]"
+        guide: "{p}song [song name]"
     },
 
     onStart: async function ({ api, event, args, message }) {
         if (args.length === 0) {
-            return message.reply("❌ | Please provide a song name\n\nExample: sing mood lofi");
+            return message.reply("⚠ | Please provide a song name");
         }
 
         try {
             const query = encodeURIComponent(args.join(" "));
-            const apiUrl = `${await mahmud()}/api/sing2?songName=${query}`;
+            const baseUrl = await mahmud();
 
-            const response = await axios.get(apiUrl, {
+            const metaRes = await axios.get(`${baseUrl}/api/sing?text=${query}`);
+            const { title, thumbnail, audioUrl } = metaRes.data;
+
+            await message.reply({ body: `${title}` });
+
+            if (thumbnail) {
+                await message.reply({ attachment: thumbnail });
+            }
+
+            const audioStream = await axios.get(audioUrl || `${baseUrl}/api/sing2?songName=${query}`, {
                 responseType: "stream",
                 headers: { "author": module.exports.config.author }
             });
 
-            if (response.data.error) {
-                return message.reply(`${response.data.error}`);
-            }
-
-            const titleText = args.join(" ");
-            await message.reply({ body: titleText });
-            await message.reply({ attachment: response.data });
+            await message.reply({ attachment: audioStream.data });
 
         } catch (error) {
             console.error("Error:", error.message);
@@ -47,7 +50,7 @@ module.exports = {
                 return message.reply(`${error.response.data.error || error.message}`);
             }
 
-            message.reply("error");
+            message.reply("❌ | An error occurred while fetching the song.");
         }
     }
 };
