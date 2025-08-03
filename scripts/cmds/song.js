@@ -8,8 +8,8 @@ const mahmud = async () => {
 module.exports = {
     config: {
         name: "song",
-        version: "1.9",
-        author: "MahMUD", 
+        version: "1.4",
+        author: "moronali", 
         countDown: 10,
         role: 0,
         category: "music",
@@ -18,39 +18,28 @@ module.exports = {
 
     onStart: async function ({ api, event, args, message }) {
         if (args.length === 0) {
-            return message.reply("⚠ | Please provide a song name");
+            return message.reply("❌ Please provide a song name.\nExample: song lofi beats");
         }
 
         try {
             const query = encodeURIComponent(args.join(" "));
             const baseUrl = await mahmud();
+            const apiUrl = `${baseUrl}/api/sing2?songName=${query}`;
 
-            const metaRes = await axios.get(`${baseUrl}/api/sing?text=${query}`);
-            const { title, thumbnail, audioUrl } = metaRes.data;
-
-            await message.reply({ body: `${title}` });
-
-            if (thumbnail) {
-                await message.reply({ attachment: thumbnail });
-            }
-
-            const audioStream = await axios.get(audioUrl || `${baseUrl}/api/sing2?songName=${query}`, {
+            const response = await axios.get(apiUrl, {
                 responseType: "stream",
                 headers: { "author": module.exports.config.author }
             });
 
-            await message.reply({ attachment: audioStream.data });
+            await message.reply({ attachment: response.data });
 
         } catch (error) {
-            console.error("Error:", error.message);
+            console.error("Error fetching song:", error.message);
 
-            if (error.response) {
-                console.error("Response error data:", error.response.data);
-                console.error("Response status:", error.response.status);
-                return message.reply(`${error.response.data.error || error.message}`);
+            if (error.response && error.response.data) {
+                return message.reply(`❌ ${error.response.data.error || error.message}`);
             }
-
-            message.reply("❌ | An error occurred while fetching the song.");
+            message.reply("❌ An unexpected error occurred.");
         }
     }
 };
