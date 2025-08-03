@@ -2,7 +2,7 @@ module.exports = {
   config: {
     name: "off",
     version: "1.2",
-    author: "MahMUD",
+    author: "moronali",
     countDown: 0,
     role: 0,
     category: "utility",
