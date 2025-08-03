@@ -8,7 +8,7 @@ const mahmud = async () => {
 module.exports = {
     config: {
         name: "song",
-        version: "1.7",
+        version: "1.8",
         author: "MahMUD", 
         countDown: 10,
         role: 0,
@@ -34,10 +34,9 @@ module.exports = {
                 return message.reply(`${response.data.error}`);
             }
 
-            message.reply({
-                body: ` ${args.join(" ")}`,
-                attachment: response.data
-            });
+            const titleText = args.join(" ");
+            await message.reply({ body: titleText });
+            await message.reply({ attachment: response.data });
 
         } catch (error) {
             console.error("Error:", error.message);
