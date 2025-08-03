@@ -22,7 +22,7 @@ module.exports = {
     }
 
     if (!args[0] || args[0].toLowerCase() !== "confirm") {
-      return message.reply("🤖 Are you sure you want to shut me down?\nIf yes, type: {p}off confirm");
+      return message.reply("moronali boss are you sure you want to shut me down?\nIf yes, type: {p}off confirm");
     }
 
     await message.reply("💤 Shutting down... Goodbye!");
