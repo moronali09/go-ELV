@@ -1,67 +1,54 @@
 const axios = require("axios");
-const streamifier = require("streamifier");
 
-async function getBaseApiUrl() {
-  const res = await axios.get(
-    "https://raw.githubusercontent.com/Blankid018/D1PT0/main/baseApiUrl.json"
-  );
-  return res.data.api;
-}
-
-async function downloadBuffer(url) {
-  const resp = await axios.get(url, { responseType: "arraybuffer" });
-  return Buffer.from(resp.data);
-}
-
-module.exports.config = {
-  name: "song",
-  version: "1.0",
-  aliases: ["play", "music"],
-  credits: "moron ali",
-  hasPermssion: 0,
-  description: "Search and send first YouTube song result (title, thumbnail, mp3)",
-  commandCategory: "media",
-  guide: { en: "{pn} <song name>" }
+const mahmud = async () => {
+  const base = await axios.get("https://raw.githubusercontent.com/mahmudx7/exe/main/baseApiUrl.json");
+  return base.data.mahmud;
 };
 
-// Entry point expected by the framework
-module.exports.onStart = async function({ api, event, args }) {
-  const keyword = args.join(" ").trim();
-  if (!keyword) {
-    return api.sendMessage("Use: /songsearch <song name>", event.threadID, event.messageID);
-  }
+module.exports = {
+    config: {
+        name: "song",
+        version: "1.7",
+        author: "MahMUD", 
+        countDown: 10,
+        role: 0,
+        category: "music",
+        guide: "{p}sing [song name]"
+    },
 
-  try {
-    const BASE = await getBaseApiUrl();
-    // Search and pick first result
-    const searchRes = await axios.get(`${BASE}/ytFullSearch?songName=${encodeURIComponent(keyword)}`);
-    const results = searchRes.data;
-    if (!results.length) {
-      return api.sendMessage(`⭕ No matches for \"${keyword}\"`, event.threadID, event.messageID);
+    onStart: async function ({ api, event, args, message }) {
+        if (args.length === 0) {
+            return message.reply("❌ | Please provide a song name\n\nExample: sing mood lofi");
+        }
+
+        try {
+            const query = encodeURIComponent(args.join(" "));
+            const apiUrl = `${await mahmud()}/api/sing2?songName=${query}`;
+
+            const response = await axios.get(apiUrl, {
+                responseType: "stream",
+                headers: { "author": module.exports.config.author }
+            });
+
+            if (response.data.error) {
+                return message.reply(`${response.data.error}`);
+            }
+
+            message.reply({
+                body: ` ${args.join(" ")}`,
+                attachment: response.data
+            });
+
+        } catch (error) {
+            console.error("Error:", error.message);
+
+            if (error.response) {
+                console.error("Response error data:", error.response.data);
+                console.error("Response status:", error.response.status);
+                return message.reply(`${error.response.data.error || error.message}`);
+            }
+
+            message.reply("error");
+        }
     }
-    const first = results[0];
-
-    // Send title + thumbnail
-    const thumbResp = await axios.get(first.thumbnail, { responseType: "stream" });
-    api.sendMessage(
-      { body: `🎵 ${first.title}`, attachment: thumbResp.data },
-      event.threadID,
-      async () => {
-        // Download mp3 and send
-        const dlRes = await axios.get(`${BASE}/ytDl3?link=${first.id}&format=mp3`);
-        const { title, downloadLink } = dlRes.data;
-        const audioBuffer = await downloadBuffer(downloadLink);
-        const audioStream = streamifier.createReadStream(audioBuffer);
-        api.sendMessage(
-          { body: `▶️ Now playing: ${title}`, attachment: audioStream },
-          event.threadID,
-          event.messageID
-        );
-      },
-      event.messageID
-    );
-  } catch (err) {
-    console.error(err);
-    api.sendMessage(`❌ Error: ${err.message}`, event.threadID, event.messageID);
-  }
 };
