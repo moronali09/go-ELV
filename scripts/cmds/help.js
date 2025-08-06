@@ -1,7 +1,7 @@
 module.exports = {
   config: {
     name: "help",
-    aliases: []
+    aliases: [], 
     version: "2.1",
     author: "moronali",
     shortDescription: "Show all available commands",
@@ -15,26 +15,27 @@ module.exports = {
     const cmdArray = [...allCommands.keys()].sort((a, b) => a.localeCompare(b));
     const pageSize = 10;
 
-    // Show detailed command info
     const query = args[0]?.toLowerCase();
+
     if (query && isNaN(query)) {
-      const cmd = allCommands.get(query) || [...allCommands.values()].find(c => c.config.aliases?.includes(query));
+      const cmd = allCommands.get(query) || [...allCommands.values()].find(c => c.config?.aliases?.includes(query));
       if (!cmd) return message.reply(`Command "${query}" not found.`);
-      const { name, category, aliases, version, author, guide } = cmd.config;
-      const usage = guide?.replace(/{pn}/g, prefix + name) || "None";
+
+      const { name, category, aliases, version, author, guide } = cmd.config || {};
+      const usage = typeof guide === "string" ? guide.replace(/{pn}/g, prefix + name) : "None";
+
       return message.reply(
         [
           `      cmd: ${name}`,
           `Category: ${category || "other"}`,
           aliases?.length ? `Aliases: ${aliases.join(", ")}` : null,
           `Version: ${version}`,
-          `               moronali\n\n`,
+          `               ${author || "unknown"}\n\n`,
           `Usage: ${usage}`
         ].filter(Boolean).join("\n")
       );
     }
 
-    // Paginated command list
     const page = parseInt(args[0]) || 1;
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
@@ -52,3 +53,4 @@ module.exports = {
     return message.reply(msg);
   }
 };
+      
