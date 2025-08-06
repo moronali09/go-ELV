@@ -1,7 +1,7 @@
 const axios = require("axios");
 
 module.exports.config = {
-  name: "mcstatus",
+  name: "serverinfo",
   aliases: ["si"],
   version: "1.9.0",
   hasPermssion: 0,
