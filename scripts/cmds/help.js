@@ -1,9 +1,9 @@
 module.exports = {
   config: {
     name: "help",
-    aliases: ["menu", "commands"],
+    aliases: []
     version: "2.1",
-    author: "nexo_here",
+    author: "moronali",
     shortDescription: "Show all available commands",
     longDescription: "Display all command names page by page.",
     category: "system",
@@ -24,11 +24,11 @@ module.exports = {
       const usage = guide?.replace(/{pn}/g, prefix + name) || "None";
       return message.reply(
         [
-          `Command: ${name}`,
+          `      cmd: ${name}`,
           `Category: ${category || "other"}`,
           aliases?.length ? `Aliases: ${aliases.join(", ")}` : null,
           `Version: ${version}`,
-          `Author: moronali`,
+          `               moronali\n\n`,
           `Usage: ${usage}`
         ].filter(Boolean).join("\n")
       );
