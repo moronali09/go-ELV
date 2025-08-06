@@ -103,9 +103,9 @@
       "note": "Bot will use gmailAccount to send email to emailGetNoti, can send notifications to many email, separate by comma or space, example: \"example1@gmail.com example2@gmail.com\" (without backslash)"
     },
     "telegram": {
-      "enable": true,
-      "botToken": "8378393332:AAGhkusZXFW7Yh4--BZT48EpQc64F1EKPhM",
-      "chatId": "storage_man_bot",
+      "enable": false,
+      "botToken": "",
+      "chatId": "",
       "note": "Can send notifications to many chatId, separate by comma or space, example: \"123456789 987654321\" (without backslash)"
     },
     "discordHook": {
