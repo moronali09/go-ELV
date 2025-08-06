@@ -2,12 +2,12 @@ const axios = require("axios");
 
 module.exports.config = {
   name: "serverinfo",
-  aliases: ["si"],
+  aliases: ["si", "mcstatus"],
   version: "1.9.0",
   hasPermssion: 0,
-  credits: "mornali",
-  description: "Check Minecraft server status (Java & Bedrock), show player names if available",
-  usage: "mcstatus <host[:port]>",
+  credits: "moronali",
+  description: "Check Minecraft Java/Bedrock server status and player names",
+  usage: "serverinfo <host[:port]>",
 };
 
 module.exports.onStart = async function({ api, event, args }) {
@@ -15,7 +15,7 @@ module.exports.onStart = async function({ api, event, args }) {
 
   if (!args[0]) {
     return api.sendMessage(
-      "Usage:\n/mcstatus play.example.com\n/mcstatus ip:port",
+      "Usage:\n/serverinfo play.example.com\n/serverinfo ip:port",
       threadID,
       messageID
     );
@@ -24,7 +24,7 @@ module.exports.onStart = async function({ api, event, args }) {
   const [host, port = "25565"] = args[0].split(":");
   const isBedrock = port === "19132";
   const url = isBedrock
-    ? `https://api.mcsrvstat.us/3/bedrock/${host}:${port}`
+    ? `https://api.mcsrvstat.us/bedrock/3/${host}:${port}`
     : `https://api.mcsrvstat.us/3/${host}:${port}`;
 
   try {
@@ -35,7 +35,6 @@ module.exports.onStart = async function({ api, event, args }) {
       return api.sendMessage("🔴 OFFLINE", threadID, messageID);
     }
 
-    // Version detection
     let version;
     if (typeof d.version === "string") version = d.version;
     else version = d.version?.name_clean || d.software?.name || "Unknown";
@@ -44,7 +43,6 @@ module.exports.onStart = async function({ api, event, args }) {
     const playersMax = d.players?.max || 0;
     const playersInfo = `${playersOnline}/${playersMax}`;
 
-    // Gather names
     const rawNames = Array.isArray(d.players?.list)
       ? d.players.list
       : Array.isArray(d.players?.sample)
