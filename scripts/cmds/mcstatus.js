@@ -3,12 +3,11 @@ const axios = require("axios");
 module.exports.config = {
   name: "mcstatus",
   aliases: ["si"],
-  version: "1.0.0",
+  version: "1.9.0",
   hasPermssion: 0,
   credits: "mornali",
-  description: "Check Minecraft server status (Java & Bedrock)",
+  description: "Check Minecraft server status (Java & Bedrock), show player names if available",
   usage: "mcstatus <host[:port]>",
-  aliases: ["si"]
 };
 
 module.exports.onStart = async function({ api, event, args }) {
@@ -16,17 +15,13 @@ module.exports.onStart = async function({ api, event, args }) {
 
   if (!args[0]) {
     return api.sendMessage(
-      "📌 Usage:\n/mcstatus play.example.com\n/mcstatus ip:port",
+      "Usage:\n/mcstatus play.example.com\n/mcstatus ip:port",
       threadID,
       messageID
     );
   }
 
-  const input = args[0];
-  const parts = input.split(":");
-  const host = parts[0];
-  const port = parts[1] || "25565";
-
+  const [host, port = "25565"] = args[0].split(":");
   const isBedrock = port === "19132";
   const url = isBedrock
     ? `https://api.mcsrvstat.us/3/bedrock/${host}:${port}`
@@ -36,35 +31,57 @@ module.exports.onStart = async function({ api, event, args }) {
     const res = await axios.get(url);
     const d = res.data;
 
-    if (!d || !d.online) {
-      return api.sendMessage(
-        `❌ Server is **offline** or unreachable.\nIP: ${host}:${port}`,
-        threadID,
-        messageID
-      );
+    if (!d?.online) {
+      return api.sendMessage("🔴 OFFLINE", threadID, messageID);
     }
 
-    const motd = d.motd?.clean ? d.motd.clean.join("\n") : "No MOTD";
-    const version = d.version?.name_clean || "Unknown";
-    const players = d.players
-      ? `${d.players.online}/${d.players.max}`
-      : "N/A";
+    // Version detection
+    let version;
+    if (typeof d.version === "string") version = d.version;
+    else version = d.version?.name_clean || d.software?.name || "Unknown";
 
-    const msg = 
-`🎮 Minecraft Server Status
+    const playersOnline = d.players?.online || 0;
+    const playersMax = d.players?.max || 0;
+    const playersInfo = `${playersOnline}/${playersMax}`;
 
-📡 IP: ${host}:${port}
-✅ Online: Yes
-👥 Players: ${players}
-🔢 Version: ${version}
-💬 MOTD:
-${motd}`;
+    // Gather names
+    const rawNames = Array.isArray(d.players?.list)
+      ? d.players.list
+      : Array.isArray(d.players?.sample)
+      ? d.players.sample
+      : [];
+
+    const namesArray = rawNames.map(item =>
+      typeof item === "string"
+        ? item
+        : item.name || item.player || JSON.stringify(item)
+    );
+
+    let playerNames;
+    if (namesArray.length) {
+      const showLimit = 5;
+      const shown = namesArray.slice(0, showLimit);
+      const nameLines = shown.map((n, i) => `${i + 1}. ${n}`).join("\n");
+      const remaining = namesArray.length - showLimit;
+      const more = remaining > 0 ? `\n…and ${remaining} more` : "";
+      playerNames = nameLines + more;
+    } else {
+      playerNames = "No players online or query disabled. Enable 'enable-query' in server.properties.";
+    }
+
+    const msg =
+`minecraft server info/only info
+    🟢 ONLINE
+                             V: ${version}
+Players: ${playersInfo}
+_______________________________
+${playerNames}`;
 
     return api.sendMessage(msg, threadID, messageID);
-  } catch (e) {
-    console.log("mcstatus error:", e.message || e);
+  } catch (error) {
+    console.error("mcstatus error:", error.message || error);
     return api.sendMessage(
-      "⚠️ Error fetching server info. Please check the IP and try again.",
+      "🟠 ERROR\ncheck IP and try again.",
       threadID,
       messageID
     );
