@@ -1,8 +1,8 @@
 module.exports = {
 	config: {
-		name: "onlyadminbox",
-		aliases: ["onlyadbox", "adboxonly", "adminboxonly"],
-		version: "1.3",
+		name: "adboxonly",
+		aliases: ["onlyadminbox", "onlyowner"],
+		version: "1.4",
 		author: "NTKhang",
 		countDown: 5,
 		role: 1,
@@ -51,7 +51,7 @@ module.exports = {
 		if (args[indexGetVal] == "on")
 			value = true;
 		else if (args[indexGetVal] == "off")
-			value = false;
+			value = true;
 		else
 			return message.reply(getLang("syntaxError"));
 
