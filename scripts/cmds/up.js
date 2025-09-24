@@ -31,7 +31,7 @@ module.exports = {
 
       startTime = Date.now();
 
-      return message.reply(✅ Uptime set from: ${d}d ${m}m ${s}s);
+      return message.reply(`✅ Uptime set from: ${d}d ${m}m ${s}s`);
     }
 
     let now = Date.now();
@@ -51,14 +51,13 @@ module.exports = {
     let minutes = Math.floor(totalSeconds / 60);
     let seconds = totalSeconds % 60;
 
-    const msg =
-      🔵 Server Uptime: moronali-ELV\n +
-      ________________________\n +
-      │ Days    : ${days}\n +
-      │ Hours   : ${hours}\n +
-      │ Minutes : ${minutes}\n +
-      │ Seconds : ${seconds}\n +
-      ______________________;
+    const msg = `🔵 Server Uptime: moronali-ELV
+________________________
+│ Days    : ${days}
+│ Hours   : ${hours}
+│ Minutes : ${minutes}
+│ Seconds : ${seconds}
+________________________`;
 
     return message.reply(msg);
   }
