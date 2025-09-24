@@ -31,14 +31,13 @@ module.exports = {
       const procUptime = Math.floor(process.uptime()); // seconds
       const nodeVer = process.version;
 
-      const msg =
-        🔵 Server Ping: moronali-ELV\n +
-        ________________________\n +
-        │ API Ping       : ${apiPing} ms\n +
-        │ EventLoop Lat. : ${Math.round(loopLatency)} ms\n +
-        │ Process Uptime : ${procUptime} s\n +
-        │ Node Version   : ${nodeVer}\n +
-        ______________________;
+      const msg = `🔵 Server Ping: moronali-ELV
+________________________
+│ API Ping       : ${apiPing} ms
+│ EventLoop Lat. : ${Math.round(loopLatency)} ms
+│ Process Uptime : ${procUptime} s
+│ Node Version   : ${nodeVer}
+________________________`;
 
       return message.reply(msg);
     } catch (err) {
