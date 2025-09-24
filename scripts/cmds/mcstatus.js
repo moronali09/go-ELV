@@ -78,7 +78,7 @@ module.exports.onStart = async function ({ api, event, args }) {
       playerListText = namesArray.map((n, i) => `${i + 1}. ${n}`).join("\n");
     } else if (playersOnline > 0) {
       // players exist but API didn't return names
-      playerListText = `Player list unavailable (server has query disabled or privacy). ${playersOnline} player(s) online.`;
+      playerListText = `${playersOnline} player(s) online.`;
     } else {
       playerListText = "No players online.";
     }
@@ -107,7 +107,7 @@ module.exports.onStart = async function ({ api, event, args }) {
     const header = `🟢 Server Online: ${hostname} — ${serverType}`;
     const infoLines = [
       `Ping: ${ping} ms`,
-      `Version: ${version}`,
+      `              Version: ${version}`,
       `Software: ${software}`,
       `Protocol: ${protocol}`,
       `MOTD: ${motd}`,
@@ -126,7 +126,7 @@ ${playerListText}`;
   } catch (err) {
     console.error("mcstatus error:", err?.message || err);
     return api.sendMessage(
-      `⚠️ Failed to fetch server info: ${host} \n check the IP/port and try again.`,
+      `${host} \n check the IP/port and try again.`,
       threadID,
       messageID
     );
