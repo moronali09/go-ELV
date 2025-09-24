@@ -5,7 +5,7 @@ module.exports.config = {
   aliases: ["si"],
   version: "3.1.0",
   hasPermssion: 0,
-  credits: "moronali",
+  author: "moronali",
   description: "Minecraft server info (Java & Bedrock).",
   usage: "<host[:port]>",
 };
