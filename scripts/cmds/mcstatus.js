@@ -100,7 +100,7 @@ module.exports.onStart = async function ({ api, event, args }) {
     // Compose message
     const header = `🟢Online`;
     const infoLines = [
-      `\nPing: ${ping} ms`,
+      `Ping: ${ping} ms`,
       `          ${version}`,
       `MOTD: ${motd}`,
       `Players: ${playersInfo}`,
