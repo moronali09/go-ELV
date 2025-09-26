@@ -2,7 +2,7 @@ module.exports = {
   config: {
     name: "help",
     aliases: [],
-    version: "2.2",
+    version: "2.3",
     author: "moronali",
     shortDescription: "Show all available commands",
     longDescription: "Display all command names page by page.",
@@ -69,7 +69,7 @@ module.exports = {
 
       const detail = [
         `📌 /${name} — ${description}`,
-        `┊ Category: ${category || "other"} ┊ Version: ${version || "?"} ┊ Author: moronali`,
+        `┊ Category: ${category || "other"} \n┊ Version: ${version || "?"} \n┊ Author: moronali`,
         `┊ Aliases: ${aliases.length ? aliases.map(a => `/${a}`).join(", ") : "None"}`,
         `┊ Usage: ${usage}`
       ].join("\n");
