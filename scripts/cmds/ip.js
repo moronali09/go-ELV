@@ -1,10 +1,9 @@
-const fs = require("fs-extra");
 const { utils } = global;
 
 module.exports = {
 	config: {
 		name: "ip",
-		version: "1.3",
+		version: "1.4",
 		author: "NTKhang",
 		countDown: 5,
 		role: 0,
@@ -19,7 +18,6 @@ module.exports = {
 	langs: {
 		vi: {
 			reset: "Đã xóa IP của nhóm này.",
-			confirmThisThread: "Vui lòng thả cảm xúc bất kỳ vào tin nhắn này để xác nhận thay đổi IP cho nhóm chat của bạn",
 			successThisThread: "Đã lưu IP cho nhóm: %1",
 			myIP: "Saved IP (this group): %1",
 			rulesText: `╭─── 🎮 STAR SMP Rules ───╮
@@ -40,7 +38,6 @@ module.exports = {
 		},
 		en: {
 			reset: "Removed saved IP for this group.",
-			confirmThisThread: "Please react to this message to confirm change of IP for this group",
 			successThisThread: "Saved IP for this group: %1",
 			myIP: "Saved IP (this group): %1",
 			rulesText: `╭─── 🎮 STAR SMP Rules ───╮
@@ -61,17 +58,17 @@ module.exports = {
 		}
 	},
 
-	onStart: async function ({ message, args, event, commandName, getLang }) {
+	onStart: async function ({ message, args, event, getLang }) {
 		if (!args[0]) {
-			const threadIP = await global.GoatBot.modules?.threadsData?.get?.(event.threadID, "data.serverIP");
-			const threadPort = await global.GoatBot.modules?.threadsData?.get?.(event.threadID, "data.serverPort");
+			const threadIP = event.threadIP || null;
+			const threadPort = event.threadPort || null;
 			if (!threadIP) return message.reply(getLang("myIP", "None"));
 			return message.reply(getLang("myIP", `${threadIP}${threadPort ? ":" + threadPort : ""}`));
 		}
 
 		if (args[0].toLowerCase() === "reset") {
-			await global.GoatBot.modules?.threadsData?.set?.(event.threadID, null, "data.serverIP");
-			await global.GoatBot.modules?.threadsData?.set?.(event.threadID, null, "data.serverPort");
+			event.threadIP = null;
+			event.threadPort = null;
 			return message.reply(getLang("reset"));
 		}
 
@@ -88,30 +85,20 @@ module.exports = {
 			port = args[1];
 		}
 
-		const formSet = {
-			commandName,
-			author: event.senderID,
-			ip,
-			port
-		};
+		// সরাসরি save করা
+		event.threadIP = ip;
+		event.threadPort = port;
 
-		return message.reply(getLang("confirmThisThread"), (err, info) => {
-			formSet.messageID = info.messageID;
-			global.GoatBot.onReaction.set(info.messageID, formSet);
-		});
-	},
-
-	onReaction: async function ({ message, event, Reaction, getLang }) {
-		const { author, ip, port } = Reaction;
-		if (event.userID !== author) return;
-		await global.GoatBot.modules?.threadsData?.set?.(event.threadID, ip, "data.serverIP");
-		await global.GoatBot.modules?.threadsData?.set?.(event.threadID, port, "data.serverPort");
 		await message.reply(getLang("successThisThread", `${ip}:${port}`));
+
+		// Send Java & Bedrock
 		await message.reply("Java");
 		await message.reply(`${ip}:${port}`);
 		await message.reply("Bedrock");
 		await message.reply(`${ip}`);
 		await message.reply(`${port}`);
+
+		// 1.5s delay তারপর rules
 		await new Promise(resolve => setTimeout(resolve, 1500));
 		await message.reply(getLang("rulesText"));
 	},
@@ -124,10 +111,10 @@ module.exports = {
 			: global.GoatBot.config.prefix;
 
 		if (text.toLowerCase() === "ip" || text === `${prefix}ip`) {
-			const threadIP = await global.GoatBot.modules?.threadsData?.get?.(event.threadID, "data.serverIP");
-			const threadPort = await global.GoatBot.modules?.threadsData?.get?.(event.threadID, "data.serverPort");
+			const threadIP = event.threadIP || null;
+			const threadPort = event.threadPort || null;
 			const display = threadIP ? `${threadIP}${threadPort ? ":" + threadPort : ""}` : "None";
-			await message.reply(getLang("myIP", display));
+			return message.reply(getLang("myIP", display));
 		}
 	}
 };
