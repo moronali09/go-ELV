@@ -89,9 +89,9 @@ module.exports = {
       const header = `🟢 Server is Online: — ${serverType}`;
       const infoLines = [
         `Ping: ${ping} ms`,
-        `     V: ${version}`,
+        `Verson: ${version}`,
         `MOTD: ${motd}`,
-        `${protocol}\n${software}\n\n`,
+        ` `,
         `Players: ${playersInfo}`,
         
         extra.length ? `Extra: ${extra.join(" | ")}` : null
