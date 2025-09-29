@@ -2,15 +2,22 @@ const ALLOWED_THREAD = "30017677721164007";
 const FIXED_IP = "node-2.banglaverse.net";
 const FIXED_PORT = "25669";
 
+async function sendPlain(message, text) {
+  if (!message) return;
+  if (typeof message.send === "function") return message.send(text);
+
+  return message.reply ? message.reply(text) : null;
+}
+
 async function sendIPSequence(message) {
-  // Send Java/Bedrock sequence + rules
-  await message.reply("Java");
-  await message.reply(`${FIXED_IP}:${FIXED_PORT}`);
-  await message.reply("Bedrock");
-  await message.reply(`${FIXED_IP}`);
-  await message.reply(`${FIXED_PORT}`);
-  await new Promise(res => setTimeout(res, 4000));
-  await message.reply(
+
+  await sendPlain(message, "Java");
+  await sendPlain(message, `${FIXED_IP}:${FIXED_PORT}`);
+  await sendPlain(message, "Bedrock");
+  await sendPlain(message, `${FIXED_IP}`);
+  await sendPlain(message, `${FIXED_PORT}`);
+  await new Promise(res => setTimeout(res, 1500));
+  await sendPlain(message,
 `╭─── 🎮 STAR SMP Rules ───╮
 
 ✨ 1. সবার সাথে ফ্রেন্ডলি থাকতে হবে  
@@ -32,24 +39,28 @@ async function sendIPSequence(message) {
 module.exports = {
   config: {
     name: "ip",
-    version: "1.8",
+    version: "1.9",
     author: "Custom",
     countDown: 5,
     role: 0,
-    description: "Respond to `ip` (prefix-free) in specific group or via command",
+    description: "Respond to `ip` (prefix-free)",
     category: "config"
   },
 
   onStart: async function ({ message, args, event }) {
     if (event.threadID !== ALLOWED_THREAD) {
-      return message.reply("❌ | set nei, morona ke inbox koro ");
+      return sendPlain(message, "❌ | ip set nei, inbox moronali ।");
     }
+
+    if (event.messageReply || event.isReply) return;
 
     await sendIPSequence(message);
   },
   onChat: async function ({ event, message }) {
     if (!event.body) return;
     if (event.threadID !== ALLOWED_THREAD) return;
+
+    if (event.messageReply || event.isReply) return;
 
     const text = event.body.trim().toLowerCase();
     if (text === "ip") {
