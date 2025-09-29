@@ -18,7 +18,7 @@ async function sendIPSequence(message) {
   await sendPlain(message, `${FIXED_PORT}`);
   await new Promise(res => setTimeout(res, 1500));
   await sendPlain(message,
-`╭─── 🎮 STAR SMP Rules ───╮
+`╭──🎮 STAR SMP Rules─╮
 
 ✨ 1. সবার সাথে ফ্রেন্ডলি থাকতে হবে  
 
@@ -32,7 +32,7 @@ async function sendIPSequence(message) {
 
 💬 6. Messenger Group-এ অবশ্যই থাকতে হবে  
 
-╰───────────────────`
+╰──────────────────`
   );
 }
 
