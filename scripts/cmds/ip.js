@@ -41,7 +41,7 @@ module.exports = {
     name: "ip",
     version: "1.9",
     author: "Custom",
-    countDown: 5,
+    countDown: 50,
     role: 0,
     description: "Respond to `ip` (prefix-free)",
     category: "config"
