@@ -134,7 +134,7 @@ module.exports = {
       try {
         const stream = await diptoStream(data.downloadLink, outPath);
 
-        const bodyText = `• Title: ${data.title || selected.title || 'Unknown'}\n• Quality: ${data.quality || 'auto'}`;
+        const bodyText = ` || selected.title || 'Unknown'}\n ${data.quality || 'auto'}`;
         await api.sendMessage({ body: bodyText, attachment: stream }, event.threadID, () => {
           try { fs.unlinkSync(outPath); } catch (e) {}
         }, event.messageID);
