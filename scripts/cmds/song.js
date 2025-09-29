@@ -52,8 +52,8 @@ function extractVideoID(url) {
 module.exports = {
   config: {
     name: "song",
-    version: "1.1",
-    author: "moronali",
+    version: "1.0",
+    author: "custom",
     countDown: 5,
     role: 0,
     description: "Search and send thumbnail + video(mp4) or audio(mp3). Usage: song <query> OR song sing <query>",
@@ -78,6 +78,8 @@ module.exports = {
       const query = qParts.join(" ").trim();
       if (!query) return api.sendMessage("Please provide a search query or YouTube link.", event.threadID, event.messageID);
 
+
+
       let videoID = null;
       let selected = null;
 
@@ -100,25 +102,27 @@ module.exports = {
         if (!results || results.length === 0) {
           return api.sendMessage("⭕ No results found for: " + query, event.threadID, event.messageID);
         }
-        selected = results[0]; 
+        selected = results[0]; // pick first result automatically
         videoID = selected.id;
       }
 
+      // send thumbnail first (if exists)
       if (selected && (selected.thumbnail || selected.thumbnails || selected.bestThumbnail)) {
         const thumbUrl = selected.thumbnail || (selected.thumbnails && selected.thumbnails[0]) || (selected.bestThumbnail && selected.bestThumbnail.url) || null;
         if (thumbUrl) {
           try {
             const thumbPath = path.join(TMP, `thumb_${Date.now()}.jpg`);
             const thumbStream = await dipto(thumbUrl, thumbPath);
-            await api.sendMessage({ body: attachment: thumbStream }, event.threadID);
+            await api.sendMessage({ body: ` `, attachment: thumbStream }, event.threadID);
             try { fs.unlinkSync(thumbPath); } catch (e) {}
           } catch (e) {
-
+            // fallback: send thumbnail url as text
             if (selected.thumbnail) await api.sendMessage("Thumbnail: " + selected.thumbnail, event.threadID);
           }
         }
       }
 
+      // download media via API endpoint ytDl3
       const format = mode === "audio" ? "mp3" : "mp4";
       await api.sendMessage(`${selected.title || videoID}`, event.threadID);
 
@@ -131,21 +135,23 @@ module.exports = {
       const ext = format;
       const outPath = path.join(TMP, `song_${Date.now()}.${ext}`);
 
+      // download file from downloadLink (stream)
       try {
         const stream = await diptoStream(data.downloadLink, outPath);
 
-        const bodyText = ` || selected.title || 'Unknown'}\n ${data.quality || 'auto'}`;
+        // send with title + quality
+        const bodyText = `  `;
         await api.sendMessage({ body: bodyText, attachment: stream }, event.threadID, () => {
           try { fs.unlinkSync(outPath); } catch (e) {}
         }, event.messageID);
       } catch (err) {
         console.error("Download/send error:", err);
-        return api.sendMessage("❌ | Failed", event.threadID, event.messageID);
+        return api.sendMessage("❌ Failed.", event.threadID, event.messageID);
       }
 
     } catch (err) {
       console.error("song command error:", err);
-      return api.sendMessage("❌ | request error  .", event.threadID, event.messageID);
+      return api.sendMessage("❌ | request error .", event.threadID, event.messageID);
     }
   }
 };
