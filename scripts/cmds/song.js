@@ -110,7 +110,7 @@ module.exports = {
           try {
             const thumbPath = path.join(TMP, `thumb_${Date.now()}.jpg`);
             const thumbStream = await dipto(thumbUrl, thumbPath);
-            await api.sendMessage({ body: `  || 'Track'}`, attachment: thumbStream }, event.threadID);
+            await api.sendMessage({ body: attachment: thumbStream }, event.threadID);
             try { fs.unlinkSync(thumbPath); } catch (e) {}
           } catch (e) {
 
@@ -120,7 +120,7 @@ module.exports = {
       }
 
       const format = mode === "audio" ? "mp3" : "mp4";
-      await api.sendMessage(`⏬ | ${format} for: ${selected.title || videoID}`, event.threadID);
+      await api.sendMessage(`${selected.title || videoID}`, event.threadID);
 
       const dlRes = await axios.get(`${await baseApiUrl()}/ytDl3?link=${videoID}&format=${format}&quality=4`);
       const { data } = dlRes;
