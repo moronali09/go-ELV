@@ -1,31 +1,31 @@
 const ALLOWED_THREAD = "30017677721164007";
-
 const FIXED_IP = "node-2.banglaverse.net";
 const FIXED_PORT = "25669";
 
 module.exports = {
-  config: {
-    name: "ip",
-    version: "1.6",
-    author: "Custom",
-    countDown: 5,
-    role: 0,
-    description: "Send fixed server IP and rules (only in allowed group)",
-    category: "config"
-  },
+	config: {
+		name: "ip",
+		version: "1.7",
+		author: "Custom",
+		countDown: 5,
+		role: 0,
+		description: "Respond to `ip` (prefix-free) in specific group",
+		category: "config"
+	},
 
-  onStart: async function ({ message, event }) {
-    if (event.threadID !== ALLOWED_THREAD) 
-      return message.reply("❌ | ip set nei, inbox moronali");
+	onChat: async function ({ event, message }) {
+		if (!event.body) return;
+		const text = event.body.trim().toLowerCase();
+		if (event.threadID !== ALLOWED_THREAD) return;
 
-    await message.reply("Java");
-    await message.reply(`${FIXED_IP}:${FIXED_PORT}`);
-    await message.reply("Bedrock");
-    await message.reply(`${FIXED_IP}`);
-    await message.reply(`${FIXED_PORT}`);
-
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    await message.reply(
+		if (text === "ip") {
+			await message.reply("Java");
+			await message.reply(`${FIXED_IP}:${FIXED_PORT}`);
+			await message.reply("Bedrock");
+			await message.reply(`${FIXED_IP}`);
+			await message.reply(`${FIXED_PORT}`);
+			await new Promise(res => setTimeout(res, 1500));
+			await message.reply(
 `╭─── 🎮 STAR SMP Rules ───╮
 
 ✨ 1. সবার সাথে ফ্রেন্ডলি থাকতে হবে  
@@ -41,6 +41,7 @@ module.exports = {
 💬 6. Messenger Group-এ অবশ্যই থাকতে হবে  
 
 ╰───────────────────`
-    );
-  }
+			);
+		}
+	}
 };
