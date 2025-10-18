@@ -1,6 +1,6 @@
 const ALLOWED_THREAD = "30017677721164007";
-const FIXED_IP = "node-2.banglaverse.net";
-const FIXED_PORT = "25669";
+const FIXED_IP = "paid-in01.melonnodes.xyz";
+const FIXED_PORT = "25589";
 
 async function sendPlain(message, text) {
   if (!message) return;
@@ -16,7 +16,7 @@ async function sendIPSequence(message) {
   await sendPlain(message, "Bedrock");
   await sendPlain(message, `${FIXED_IP}`);
   await sendPlain(message, `${FIXED_PORT}`);
-  await new Promise(res => setTimeout(res, 1500));
+  await new Promise(res => setTimeout(res, 3000));
   await sendPlain(message,
 `╭──🎮 STAR SMP Rules─╮
 
