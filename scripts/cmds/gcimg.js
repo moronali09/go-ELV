@@ -1,5 +1,4 @@
 const axios = require("axios");
-const path = require("path");
 
 const baseApiUrl = async () => {
   const base = await axios.get("https://raw.githubusercontent.com/Mostakim0978/D1PT0/refs/heads/main/baseApiUrl.json");
@@ -7,15 +6,23 @@ const baseApiUrl = async () => {
 };
 
 async function getAvatarUrls(userIDs) {
+  const defaults = [
+    "https://i.ibb.co/qk0bnY8/363492156-824459359287620-3125820102191295474-n-png-nc-cat-1-ccb-1-7-nc-sid-5f2048-nc-eui2-Ae-HIhi-I.png",
+    "https://i.ibb.co/6tVQm1R/default1.png",
+    "https://i.ibb.co/7QpKsCX/default2.png",
+    "https://i.ibb.co/8xYb9mN/default3.png"
+  ];
+  const token = "6628568379%7Cc1e620fa708a1d5696fb991c1bde5662";
   const avatarURLs = [];
   for (let userID of userIDs) {
     try {
-      const avatar = await axios.get(
-        `https://graph.facebook.com/${userID}/picture?height=1500&width=1500&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`
-      );
-      avatarURLs.push(avatar.request.res.responseUrl);
+      const res = await axios.get(`https://graph.facebook.com/${userID}/picture`, {
+        params: { height: 1500, width: 1500, redirect: false, access_token: decodeURIComponent(token) }
+      });
+      const url = res.data && res.data.data && res.data.data.url ? res.data.data.url : defaults[Math.floor(Math.random() * defaults.length)];
+      avatarURLs.push(url);
     } catch (err) {
-      avatarURLs.push("https://i.ibb.co/qk0bnY8/363492156-824459359287620-3125820102191295474-n-png-nc-cat-1-ccb-1-7-nc-sid-5f2048-nc-eui2-Ae-HIhi-I.png");
+      avatarURLs.push(defaults[Math.floor(Math.random() * defaults.length)]);
     }
   }
   return avatarURLs;
@@ -23,15 +30,15 @@ async function getAvatarUrls(userIDs) {
 
 module.exports = {
   config: {
-    name: "gcimg",
-    aliases: ["gcimage", "grpimage"],
-    version: "1.1",
+    name: "gi",
+    aliases: [],
+    version: "2.0",
     author: "nexo_here",
     countDown: 5,
     role: 0,
-    description: "Generate a styled group image with profile pictures",
+    description: "Generate a styled group image with square profile pictures",
     category: "image",
-    guide: "{pn} [--color white] [--bgcolor black] [--admincolor red] [--membercolor cyan] [--groupBorder lime] [--glow true]"
+    guide: "{pn}"
   },
 
   onStart: async function ({ api, args, event, message }) {
@@ -73,15 +80,23 @@ module.exports = {
       }
 
       const threadInfo = await api.getThreadInfo(event.threadID);
-      const participantIDs = threadInfo.participantIDs;
-      const adminIDs = threadInfo.adminIDs.map(admin => admin.id);
+      const participantIDs = threadInfo.participantIDs || [];
+      const adminIDs = (threadInfo.adminIDs || []).map(a => a.id);
 
       const memberAvatars = await getAvatarUrls(participantIDs);
       const adminAvatars = await getAvatarUrls(adminIDs);
 
+      const defaultGroupPhotos = [
+        "https://picsum.photos/1200/800?random=1",
+        "https://picsum.photos/1200/800?random=2",
+        "https://picsum.photos/1200/800?random=3",
+        "https://picsum.photos/1200/800?random=4"
+      ];
+      const groupPhotoURL = defaultGroupPhotos[Math.floor(Math.random() * defaultGroupPhotos.length)];
+
       const payload = {
-        groupName: threadInfo.threadName,
-        groupPhotoURL: threadInfo.imageSrc,
+        groupName: threadInfo.threadName || "",
+        groupPhotoURL,
         memberURLs: memberAvatars,
         adminURLs: adminAvatars,
         color: textColor,
@@ -89,25 +104,20 @@ module.exports = {
         admincolor: adminColor,
         membercolor: memberColor,
         groupborderColor: borderColor,
-        glow
+        glow,
+        shape: "square"
       };
-
-      const waitMsg = await message.reply("🛠️ | Generating group image, please wait...");
-      api.setMessageReaction("⏳", event.messageID, () => {}, true);
 
       const response = await axios.post(`${await baseApiUrl()}/gcimg`, payload, { responseType: "stream" });
 
-      message.unsend(waitMsg.messageID);
-      api.setMessageReaction("✅", event.messageID, () => {}, true);
-
       return message.reply({
-        body: "✨ | Here's your group image:",
+        body: "",
         attachment: response.data
       });
-
     } catch (err) {
-      console.error("[gcimg] Error:", err);
-      return message.reply(`❌ | An error occurred: ${err.message}`);
+      console.error("[group img] Error:", err);
+      try { api.setMessageReaction("❌", event.messageID, () => {}, true); } catch (e) {}
+      return;
     }
   }
 };
