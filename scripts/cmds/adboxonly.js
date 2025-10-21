@@ -45,13 +45,11 @@ module.exports = {
   },
 
   onStart: async function ({ args, message, event, threadsData, getLang }) {
-    // normalize
     const first = args[0] ? args[0].toLowerCase() : null;
     const second = args[1] ? args[1].toLowerCase() : null;
 
-    // decide target and value
-    let target = "main"; // "main" => onlyAdminBox, "noti" => notification toggle, "botadmin" => onlyBotAdmin
-    let opArg = first; // default op argument is first unless first is a subcommand
+    let target = "main";
+    let opArg = first;
 
     if (first === "noti") {
       target = "noti";
@@ -61,7 +59,6 @@ module.exports = {
       opArg = second;
     }
 
-    // opArg should be "on" or "off"
     let value;
     if (opArg === "on") value = true;
     else if (opArg === "off") value = false;
@@ -69,17 +66,14 @@ module.exports = {
 
     try {
       if (target === "noti") {
-        // stored key is "hideNotiMessageOnlyAdminBox" -> hide when noti is OFF
-        // so store inverse
         await threadsData.set(event.threadID, !value, "data.hideNotiMessageOnlyAdminBox");
         return message.reply(value ? getLang("turnedOnNoti") : getLang("turnedOffNoti"));
       } else if (target === "botadmin") {
-        // only bot-admin (global) can use bot
         await threadsData.set(event.threadID, value, "data.onlyBotAdmin");
         return message.reply(value ? getLang("turnedOnBotAdmin") : getLang("turnedOffBotAdmin"));
       } else {
-        // main: only group admins can use bot
         await threadsData.set(event.threadID, value, "data.onlyAdminBox");
+        await threadsData.set(event.threadID, value ? true : false, "data.allowBotAdmins");
         return message.reply(value ? getLang("turnedOn") : getLang("turnedOff"));
       }
     } catch (e) {
