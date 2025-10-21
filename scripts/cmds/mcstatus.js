@@ -6,7 +6,7 @@ module.exports = {
     aliases: ["si"],
     version: "3.1.0",
     author: "moronali",
-    countDown: 5,
+    countDown: 10,
     role: 0,
     shortDescription: "Minecraft server info (Java & Bedrock)",
     longDescription: "Check status of Minecraft Java or Bedrock server.",
@@ -22,7 +22,7 @@ module.exports = {
 
     if (!args[0]) {
       return api.sendMessage(
-        "Usage:\nmcstatus <server-ip[:port]>\nExample: mcstatus play.example.com",
+        "/si donutsmp.net. Leura",
         threadID,
         messageID
       );
@@ -84,26 +84,23 @@ module.exports = {
       if (d.plugins?.names?.length) extra.push(`Plugins: ${d.plugins.names.join(", ")}`);
       if (d.map) extra.push(`Map: ${d.map}`);
       if (typeof d.whitelist === "boolean") extra.push(`Whitelist: ${d.whitelist ? "enabled" : "disabled"}`);
-      if (d.icon) extra.push("Icon: available");
+    
 
-      const header = `🟢 Server is Online: — ${serverType}`;
+      const header = `🟢 ╭──Server is Online──`;
       const infoLines = [
-        `Ping: ${ping} ms`,
-        `Verson: ${version}`,
-        `MOTD: ${motd}`,
-        ` `,
-        `Players: ${playersInfo}`,
+        `                                 ping   : ${ping}ms`,
+        `                                 player: ${playersInfo}`,
         
         extra.length ? `Extra: ${extra.join(" | ")}` : null
       ].filter(Boolean).join("\n");
 
-      const msg = `${header}\n${infoLines}\n___________________________\n${playerListText}`;
+      const msg = `${header}\n${infoLines}\n─────────────────\n${playerListText}`;
 
       return api.sendMessage(msg, threadID, messageID);
     } catch (err) {
       console.error("mcstatus error:", err?.message || err);
       return api.sendMessage(
-        `${host} \nCheck the IP/port and try again.`,
+        `${host} \ntry again, Leura.`,
         threadID,
         messageID
       );
