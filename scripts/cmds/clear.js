@@ -78,7 +78,6 @@ module.exports = {
         await sleep(perUnsendDelay);
       }
 
-      return api.sendMessage(`✅ done. clear ${successCount} bot message(s).`, threadID);
     } catch (err) {
       console.error("clear command error:", err);
       return api.sendMessage("❌ An error occurred while trying to clear messages.", threadID);
