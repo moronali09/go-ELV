@@ -80,7 +80,7 @@ module.exports = {
 
     } catch (err) {
       console.error("clear command error:", err);
-      return api.sendMessage("❌ An error occurred while trying to clear messages.", threadID);
+      return api.sendMessage("An error occurred while trying to clear messages.", threadID);
     }
   }
 };
