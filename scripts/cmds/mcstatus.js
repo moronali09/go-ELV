@@ -3,8 +3,8 @@ const axios = require("axios");
 module.exports = {
   config: {
     name: "mcstatus",
-    aliases: ["si"],
-    version: "3.1.0",
+    aliases: ["si", "mc"],
+    version: "3.3.0",
     author: "moronali",
     countDown: 10,
     role: 0,
@@ -48,14 +48,6 @@ module.exports = {
 
       const serverType = isBedrock ? "Bedrock" : "Java";
       const hostname = d.hostname || host;
-      const protocol = d.protocol ?? (d.version?.protocol ?? "Unknown");
-
-      let motd = "No MOTD";
-      if (Array.isArray(d.motd?.clean)) motd = d.motd.clean.join(" ");
-      else if (typeof d.motd?.clean === "string") motd = d.motd.clean;
-
-      const version = d.version?.name_clean || d.version?.raw || "Unknown";
-      const software = d.software?.name || d.software?.raw || "Unknown";
 
       const playersOnline = Number(d.players?.online || 0);
       const playersMax = Number(d.players?.max || 0);
@@ -74,7 +66,7 @@ module.exports = {
       if (namesArray.length > 0) {
         playerListText = namesArray.map((n, i) => `${i + 1}. ${n}`).join("\n");
       } else if (playersOnline > 0) {
-        playerListText = `${playersOnline} player(s) online.`;
+        playerListText = `${playersOnline} Leura.`;
       } else {
         playerListText = "No players online.";
       }
@@ -90,6 +82,7 @@ module.exports = {
       const infoLines = [
         `                                 ping   : ${ping}ms`,
         `                                 player: ${playersInfo}`,
+        `                                 ${serverType}`,
         
         extra.length ? `Extra: ${extra.join(" | ")}` : null
       ].filter(Boolean).join("\n");
