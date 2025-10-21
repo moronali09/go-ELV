@@ -11,12 +11,9 @@ async function sendPlain(message, text) {
 
 async function sendIPSequence(message) {
 
-  await sendPlain(message, "Java");
+  await sendPlain(message, "nee, Leura");
   await sendPlain(message, `${FIXED_IP}:${FIXED_PORT}`);
-  await sendPlain(message, "Bedrock");
-  await sendPlain(message, `${FIXED_IP}`);
-  await sendPlain(message, `${FIXED_PORT}`);
-  await new Promise(res => setTimeout(res, 3000));
+  
   await sendPlain(message,
 `╭──🎮 STAR SMP Rules─╮
 
@@ -41,7 +38,7 @@ module.exports = {
     name: "ip",
     version: "1.9",
     author: "Custom",
-    countDown: 50,
+    countDown: 20,
     role: 0,
     description: "Respond to `ip` (prefix-free)",
     category: "config"
