@@ -46,7 +46,7 @@ module.exports = {
         return api.sendMessage(`🔴 OFFLINE`, threadID, messageID);
       }
 
-      const serverType = isBedrock ? "Bedrock" : "Java";
+      const serverType = isBedrock ? "bedrock" : "java";
       const hostname = d.hostname || host;
 
       const playersOnline = Number(d.players?.online || 0);
@@ -78,11 +78,12 @@ module.exports = {
       if (typeof d.whitelist === "boolean") extra.push(`Whitelist: ${d.whitelist ? "enabled" : "disabled"}`);
     
 
-      const header = `🟢 ╭──Server is Online──`;
+      const header = `🟢   ──Server is Online─`;
       const infoLines = [
+        `            ${serverType}`,
         `                                 ping   : ${ping}ms`,
         `                                 player: ${playersInfo}`,
-        `                                 ${serverType}`,
+        
         
         extra.length ? `Extra: ${extra.join(" | ")}` : null
       ].filter(Boolean).join("\n");
