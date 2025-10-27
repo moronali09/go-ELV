@@ -69,7 +69,7 @@ module.exports = {
       await api.unsendMessage(waitingMessage.messageID);
     } catch (error) {
       console.error("Image generation error:", error.message || error);
-      message.reply("Leura error -_-");
+      
     }
   },
 };
